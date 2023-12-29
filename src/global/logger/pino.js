@@ -6,7 +6,6 @@ import pino from 'pino';
  *
  * **/
 const errorPath = join(import.meta.url, './logs/error.mjs');
-const debugPath = join(import.meta.url, './logs/debug.mjs');
 const successPath = join(import.meta.url, './logs/success.mjs');
 
 const transport = pino.transport({
@@ -29,5 +28,6 @@ const transport = pino.transport({
 });
 
 const logger = pino(transport);
+const contactLogger = logger.child({ object: 'contact' });
 
-export { logger };
+export { contactLogger, logger };
