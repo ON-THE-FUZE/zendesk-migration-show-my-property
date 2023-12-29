@@ -27,7 +27,7 @@ async function asyncRetryWithBackoff(
     try {
       return await fn(...args);
     } catch (error) {
-      if (error.status === RATE_LIMIT_ERROR && retry < maxRetry) {
+      if ((error.status === RATE_LIMIT_ERROR || error.code === RATE_LIMIT_ERROR) && retry < maxRetry) {
         const waitTime = calculateWaitTime(retry, initTime);
         logger.info(
           `Waiting ${waitTime / MILI} seconds before retrying...`,
