@@ -142,7 +142,5 @@ success.mjs
 debug.mjs
 
 #TEMP Folders
-contacts/
 conversations/
 tickets/
-/src/index.js
