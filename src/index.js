@@ -2,6 +2,11 @@ import { stdin as input, stdout as output } from 'node:process';
 import * as readline from 'node:readline/promises';
 import { logger } from './global/logger/pino.js';
 import {
+  companyMigration,
+  countCompanyData,
+  getCompanyData,
+} from './objects/core/companies/logic/index.js';
+import {
   contactMigration,
   countContactData,
   getContactData,
@@ -56,6 +61,16 @@ const HUNDRED = 100;
       logger.info(`In total we have ${totalValues} contacts to migrate`);
       break;
     }
+    case companyOption: {
+      if (getExternalData) {
+        totalValues = await getCompanyData();
+      } else {
+        totalValues = countCompanyData();
+      }
+
+      logger.info(`In total we have ${totalValues} companies to migrate`);
+      break;
+    }
     default: {
       logger.info(`The option ${objectInput} doesn't exist on the programm`);
       break;
@@ -105,6 +120,12 @@ const HUNDRED = 100;
         logger.info(`Start contact migration...`);
         await contactMigration({ init, end, batch });
         logger.info(`End contact migration...`);
+        break;
+      }
+      case companyOption: {
+        logger.info(`Start company migration...`);
+        await companyMigration({ init, end, batch });
+        logger.info(`End company migration...`);
         break;
       }
       default: {
