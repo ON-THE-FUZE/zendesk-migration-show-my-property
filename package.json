@@ -1,0 +1,42 @@
+{
+  "name": "zendesk-migration-show-my-property",
+  "version": "1.1.0",
+  "description": "Migration Project for Show My Property Client. Zendesk to Hubspot",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "lint": "npx dprint check",
+    "format": "npx dprint fmt",
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "debug": "npm run start"
+  },
+  "keywords": [
+    "Zendesk",
+    "Hubspot"
+  ],
+  "author": "Daniel Quiroga",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dquirogat-otf/zendesk-migration-show-my-property"
+  },
+  "bugs": {
+    "url": "https://github.com/dquirogat-otf/zendesk-migration-show-my-property/issues"
+  },
+  "homepage": "https://github.com/dquirogat-otf/zendesk-migration-show-my-property#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "dprint": "^0.45.0",
+    "nodemon": "^3.0.1"
+  },
+  "dependencies": {
+    "@hubspot/api-client": "^10.0.0",
+    "axios": "^1.5.1",
+    "desm": "^1.3.0",
+    "dotenv": "^16.3.1",
+    "pino": "^8.17.2"
+  }
+}
