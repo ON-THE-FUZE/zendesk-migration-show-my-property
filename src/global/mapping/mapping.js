@@ -39,7 +39,7 @@ const manageTags = (tag) => {
     return tag.match(/#\w+/g).map(word => word.trim().toLowerCase());
   }
 
-  return tag;
+  return tag.trim().toLowerCase();
 };
 
 const mapping = (model, data) => {
