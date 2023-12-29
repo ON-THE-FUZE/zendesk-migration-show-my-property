@@ -1,5 +1,5 @@
 import { Buffer } from 'node:buffer';
-import HttpClient from '../http/httpClient';
+import HttpClient from '../http/httpClient.js';
 
 const getBasicAuth = ({ email, password }) => {
   const data = `${email}/token:${password}`;
@@ -32,7 +32,7 @@ const ZendeskClient = function({ accessToken, email, password, subdomain }) {
     });
   }
 
-  if (user && password && subdomain) {
+  if (email && password && subdomain) {
     const basicAuth = getBasicAuth({ email, password });
 
     const headers = {
@@ -121,7 +121,7 @@ ZendeskClient.prototype.support = {
 
 ZendeskClient.prototype.sell = {
   contacts: {
-    async all(params = {}) {
+   async all (params = {}) {
       existInstance(this.sellInstance);
       const url = `/v2/contacts`;
       const response = await this.sellInstance.get(url, { params });
