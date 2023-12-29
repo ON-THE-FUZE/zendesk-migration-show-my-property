@@ -8,6 +8,7 @@ import { addData, countData, loadData } from '../../../../utils/jsonSave.js';
 import asyncRetryWithBackoff from '../../../../utils/rateLimit.js';
 
 const ZERO = 0;
+const ONE = 1;
 
 // Paths
 const PATH_SAVE_DATA = join(import.meta.url, '../data/contactData.json');
@@ -21,6 +22,10 @@ const contactMapping = JSON.parse(
   readFileSync(join(import.meta.url, '../models/contact.json')),
 );
 
+const ownersMapping = JSON.parse(
+  readFileSync(join(import.meta.url, '../../../../models/owners.json')),
+);
+
 const getContactData = async () => {
   contactLogger.info('Getting the contacts from the CRM...');
   let page = 1;
@@ -31,15 +36,15 @@ const getContactData = async () => {
   do {
     try {
       contactLogger.info(`Getting the contacts from the page ${page}`);
+      const params = {
+        page,
+        is_organization: isOrganization,
+        per_page: perPage,
+      };
 
       const response = await asyncRetryWithBackoff(
-        zendesk.sell.contacts(
-          params = {
-            page,
-            is_organization: isOrganization,
-            per_page: perPage,
-          },
-        ),
+        zendesk.sell.contacts.all.bind(zendesk),
+        [params],
       );
 
       count = response?.meta?.count;
@@ -47,7 +52,7 @@ const getContactData = async () => {
       addData(PATH_SAVE_DATA, response?.items);
     } catch (error) {
       contactLogger.error(
-        `Error getting the data for the page ${page} - ${error.response.status} - ${error.response.data}`,
+        `Error getting the data for the page ${page} - ${error}`,
       );
       continue;
     }
@@ -72,10 +77,8 @@ const filterExistingObjects = async ({
   };
 
   const existingObjects = await asyncRetryWithBackoff(
-    hubspotClient.crm.contacts.batchApi.read(
-      objectToReview,
-      false,
-    ),
+    () => hubspotClient.crm.contacts.batchApi.read(objectToReview, false),
+    [],
   );
 
   if (existingObjects.results.length === ZERO) {
@@ -134,7 +137,7 @@ const contactMigrationBatch = async ({ init, end, contacts }) => {
 
     const dataToEvaluate = await filterExistingObjects({
       propertyZendesk: 'id',
-      propertyHubspot: 'zendesk_id',
+      propertyHubspot: 'zendesk__id',
       inputs: mapZendeskID,
       data: reviewByEmail,
     });
@@ -144,6 +147,17 @@ const contactMigrationBatch = async ({ init, end, contacts }) => {
 
       let properties = null;
       properties = mapping(contactMapping, contact);
+
+      if (contact.owner_id) {
+        properties.hubspot_owner_id = ownersMapping[contact.owner_id];
+      }
+
+      if (!properties.firstname || !properties.lastname) {
+        const fullName = contact.name;
+        const spaceIndex = fullName.indexOf(' ');
+        properties.firstname = fullName.substring(ZERO, spaceIndex);
+        properties.lastname = fullName.substring(spaceIndex + ONE);
+      }
 
       if (contact.parent_organization_id) {
         associations.push({
@@ -173,14 +187,16 @@ const contactMigrationBatch = async ({ init, end, contacts }) => {
 
     if (inputsCreate.length > ZERO) {
       const results = await asyncRetryWithBackoff(
-        hubspotClient.crm.contacts.batchApi.create({
-          inputs: inputsCreate,
-        }),
+        () =>
+          hubspotClient.crm.contacts.batchApi.create({
+            inputs: inputsCreate,
+          }),
+        [],
       );
 
       for (const object of results.results) {
         addData(PATH_CONTACTS_MIGRATED, {
-          zendeskID: object.properties.zendesk_id,
+          zendeskID: object.properties.zendesk__id,
           hubID: object.id,
           action: 'created',
           timestamp: new Date(),
@@ -190,14 +206,16 @@ const contactMigrationBatch = async ({ init, end, contacts }) => {
 
     if (inputsUpdate.length > ZERO) {
       const results = await asyncRetryWithBackoff(
-        hubspotClient.crm.contacts.batchApi.update({
-          inputs: inputsUpdate,
-        }),
+        () =>
+          hubspotClient.crm.contacts.batchApi.update({
+            inputs: inputsUpdate,
+          }),
+        [],
       );
 
       for (const object of results.results) {
         addData(PATH_CONTACTS_MIGRATED, {
-          zendeskID: object.properties.zendesk_id,
+          zendeskID: object.properties.zendesk__id,
           hubID: object.id,
           action: 'updated',
           timestamp: new Date(),
@@ -211,18 +229,20 @@ const contactMigrationBatch = async ({ init, end, contacts }) => {
     return `The Batch of contacts between the index ${init} and ${end} worked created succesfully`;
   } catch (error) {
     contactLogger.error(
-      `Error migrating the batch contacts - ${error.response.status} - ${error.response.data}`,
+      `Error migrating the batch contacts - ${error}`,
     );
-    return `The Batch of contacts between the index ${init} and ${end} were an error  - ${error.response.status} `;
+    return `The Batch of contacts between the index ${init} and ${end} were an error  - ${error} `;
   }
 };
 
 const contactMigration = async ({ init, end, batch }) => {
   const data = loadData(PATH_SAVE_DATA);
+  const info = data.map(contact => contact.data);
+
   const promises = [];
 
   for (let i = init; i < end; i += batch) {
-    const contacts = data.slice(i, i + batch);
+    const contacts = info.slice(i, i + batch);
     promises.push(contactMigrationBatch({ init: i, end: i + batch, contacts }));
   }
 
