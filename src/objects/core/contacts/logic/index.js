@@ -26,6 +26,10 @@ const ownersMapping = JSON.parse(
   readFileSync(join(import.meta.url, '../../../../models/owners.json')),
 );
 
+const companiesIDs = JSON.parse(
+  readFileSync(join(import.meta.url, '../../../../models/companiesIDs.json')),
+);
+
 const getContactData = async () => {
   contactLogger.info('Getting the contacts from the CRM...');
   let page = 1;
@@ -160,9 +164,14 @@ const contactMigrationBatch = async ({ init, end, contacts }) => {
       }
 
       if (contact.parent_organization_id) {
+        const hubID = companiesIDs.find(companyMigrated =>
+          Number(companyMigrated.zendeskID)
+            === Number(contact.parent_organization_id)
+        ).hubID;
+
         associations.push({
           to: {
-            id: organizationsMapping[contact.parent_organization_id],
+            id: hubID,
           },
           types: [
             {
