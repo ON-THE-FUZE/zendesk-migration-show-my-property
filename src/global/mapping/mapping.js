@@ -84,6 +84,10 @@ const mapping = (model, data) => {
       }
     }
 
+    if (property === 'email') {
+      value = value.trim();
+    }
+
     if (property === 'tags') {
       const tags = value.map(tag => manageTags(tag)).flat(Infinity);
       const uniqueValues = new Set(tags);
