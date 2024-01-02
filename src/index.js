@@ -11,7 +11,16 @@ import {
   countContactData,
   getContactData,
 } from './objects/core/contacts/logic/index.js';
-import { countLeadData, getLeadData, leadMigration } from './objects/core/leads/logic/index.js';
+import {
+  countDealData,
+  dealMigration,
+  getDealData,
+} from './objects/core/deal/logic/index.js';
+import {
+  countLeadData,
+  getLeadData,
+  leadMigration,
+} from './objects/core/leads/logic/index.js';
 
 const rl = readline.createInterface({
   input,
@@ -82,6 +91,16 @@ const HUNDRED = 100;
       logger.info(`In total we have ${totalValues} leads to migrate`);
       break;
     }
+    case dealsOption: {
+      if (getExternalData) {
+        totalValues = await getDealData();
+      } else {
+        totalValues = countDealData();
+      }
+
+      logger.info(`In total we have ${totalValues} leads to migrate`);
+      break;
+    }
     default: {
       logger.info(`The option ${objectInput} doesn't exist on the program`);
       break;
@@ -143,6 +162,12 @@ const HUNDRED = 100;
         logger.info(`Start lead migration...`);
         await leadMigration({ init, end, batch });
         logger.info(`End lead migration...`);
+        break;
+      }
+      case dealsOption: {
+        logger.info(`Start Deal migration...`);
+        await dealMigration({ init, end, batch });
+        logger.info(`End Deal migration...`);
         break;
       }
       default: {

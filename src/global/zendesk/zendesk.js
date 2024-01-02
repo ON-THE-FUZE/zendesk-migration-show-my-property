@@ -121,7 +121,7 @@ ZendeskClient.prototype.support = {
 
 ZendeskClient.prototype.sell = {
   contacts: {
-   async all (params = {}) {
+    async all(params = {}) {
       existInstance(this.sellInstance);
       const url = `/v2/contacts`;
       const response = await this.sellInstance.get(url, { params });
@@ -140,6 +140,12 @@ ZendeskClient.prototype.sell = {
     async all(params = {}) {
       existInstance(this.sellInstance);
       const url = `/v2/deals`;
+      const response = await this.sellInstance.get(url, { params });
+      return response.data;
+    },
+    async associatedContacts(dealId, params = {}) {
+      existInstance(this.sellInstance);
+      const url = `/v2/deals/${dealId}/associated_contacts`;
       const response = await this.sellInstance.get(url, { params });
       return response.data;
     },

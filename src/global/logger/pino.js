@@ -31,5 +31,6 @@ const logger = pino(transport);
 const contactLogger = logger.child({ object: 'contact' });
 const companyLogger = logger.child({ object: 'company' });
 const leadLogger = logger.child({ object: 'lead' });
+const dealLogger = logger.child({ object: 'deal' });
 
-export { companyLogger, contactLogger, logger, leadLogger };
+export { companyLogger, contactLogger, dealLogger, leadLogger, logger };
