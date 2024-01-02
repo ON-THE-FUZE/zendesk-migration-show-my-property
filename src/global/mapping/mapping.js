@@ -1,4 +1,5 @@
 const ZERO = 0;
+const ONE_HUNDRED = 100.0;
 
 const removeProperties = value => {
   const notAcceptedValues = [null, undefined, '', ' '];
@@ -54,6 +55,7 @@ const mapping = (model, data) => {
     'last_login_at',
     'updated_at',
     'due_at',
+    'estimated_close_date',
   ];
 
   for (const [property, hubspotProperty] of Object.entries(model)) {
@@ -92,6 +94,10 @@ const mapping = (model, data) => {
       const tags = value.map(tag => manageTags(tag)).flat(Infinity);
       const uniqueValues = new Set(tags);
       value = [...uniqueValues].join(';');
+    }
+
+    if (property === 'customized_win_likelihood') {
+      value = parseInt(value / ONE_HUNDRED);
     }
 
     if (dateProperties.some((dateProperty) => dateProperty === property)) {
