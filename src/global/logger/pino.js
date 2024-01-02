@@ -32,5 +32,13 @@ const contactLogger = logger.child({ object: 'contact' });
 const companyLogger = logger.child({ object: 'company' });
 const leadLogger = logger.child({ object: 'lead' });
 const dealLogger = logger.child({ object: 'deal' });
+const noteLogger = logger.child({ object: 'note' });
 
-export { companyLogger, contactLogger, dealLogger, leadLogger, logger };
+export {
+  companyLogger,
+  contactLogger,
+  dealLogger,
+  leadLogger,
+  logger,
+  noteLogger,
+};

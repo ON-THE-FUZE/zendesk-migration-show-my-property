@@ -2,6 +2,11 @@ import { stdin as input, stdout as output } from 'node:process';
 import * as readline from 'node:readline/promises';
 import { logger } from './global/logger/pino.js';
 import {
+  countNotesData,
+  getNotesData,
+  notesMigration,
+} from './objects/activities/notes/logic/index.js';
+import {
   companyMigration,
   countCompanyData,
   getCompanyData,
@@ -98,7 +103,17 @@ const HUNDRED = 100;
         totalValues = countDealData();
       }
 
-      logger.info(`In total we have ${totalValues} leads to migrate`);
+      logger.info(`In total we have ${totalValues} deals to migrate`);
+      break;
+    }
+    case notesOption: {
+      if (getExternalData) {
+        totalValues = await getNotesData();
+      } else {
+        totalValues = countNotesData();
+      }
+
+      logger.info(`In total we have ${totalValues} notes to migrate`);
       break;
     }
     default: {
@@ -168,6 +183,12 @@ const HUNDRED = 100;
         logger.info(`Start Deal migration...`);
         await dealMigration({ init, end, batch });
         logger.info(`End Deal migration...`);
+        break;
+      }
+      case notesOption: {
+        logger.info(`Start Notes migration...`);
+        await notesMigration({ init, end, batch });
+        logger.info(`End Notes migration...`);
         break;
       }
       default: {
