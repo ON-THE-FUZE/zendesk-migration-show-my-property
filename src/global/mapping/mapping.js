@@ -39,7 +39,7 @@ const manageTags = (tag) => {
     return tag.match(/#\w+/g).map(word => word.trim().toLowerCase());
   }
 
-  return tag;
+  return tag.trim().toLowerCase();
 };
 
 const mapping = (model, data) => {
@@ -82,6 +82,10 @@ const mapping = (model, data) => {
           value = `+1${mainNumber}, ext. ${extension}`;
         }
       }
+    }
+
+    if (property === 'email') {
+      value = value.trim();
     }
 
     if (property === 'tags') {

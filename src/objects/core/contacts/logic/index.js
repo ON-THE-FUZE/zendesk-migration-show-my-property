@@ -26,6 +26,10 @@ const ownersMapping = JSON.parse(
   readFileSync(join(import.meta.url, '../../../../models/owners.json')),
 );
 
+const companiesIDs = JSON.parse(
+  readFileSync(join(import.meta.url, '../../../../models/companiesIDs.json')),
+);
+
 const getContactData = async () => {
   contactLogger.info('Getting the contacts from the CRM...');
   let page = 1;
@@ -93,8 +97,8 @@ const filterExistingObjects = async ({
   return data.map((object) => {
     const exist = existingObjects.results.find(
       (existObject) =>
-        String(existObject.properties[propertyHubspot])
-          === String(object[propertyZendesk]),
+        String(existObject.properties[propertyHubspot]).toLowerCase()
+          === String(object[propertyZendesk]).toLowerCase(),
     );
 
     if (exist) {
@@ -160,9 +164,14 @@ const contactMigrationBatch = async ({ init, end, contacts }) => {
       }
 
       if (contact.parent_organization_id) {
+        const hubID = companiesIDs.find(companyMigrated =>
+          Number(companyMigrated.zendeskID)
+            === Number(contact.parent_organization_id)
+        ).hubID;
+
         associations.push({
           to: {
-            id: organizationsMapping[contact.parent_organization_id],
+            id: hubID,
           },
           types: [
             {
@@ -229,7 +238,7 @@ const contactMigrationBatch = async ({ init, end, contacts }) => {
     return `The Batch of contacts between the index ${init} and ${end} worked created succesfully`;
   } catch (error) {
     contactLogger.error(
-      `Error migrating the batch contacts - ${error}`,
+      `Error migrating the batch contacts between the index ${init} and ${end} - ${error}`,
     );
     return `The Batch of contacts between the index ${init} and ${end} were an error  - ${error} `;
   }
@@ -248,6 +257,7 @@ const contactMigration = async ({ init, end, batch }) => {
 
   const results = await Promise.all(promises);
   console.log({ results });
+  contactLogger.info({ results });
 };
 
 export { contactMigration, countContactData, getContactData };
