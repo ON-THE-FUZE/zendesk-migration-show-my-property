@@ -2,10 +2,20 @@ import { stdin as input, stdout as output } from 'node:process';
 import * as readline from 'node:readline/promises';
 import { logger } from './global/logger/pino.js';
 import {
+  callsMigration,
+  countCallsData,
+  getCallsData,
+} from './objects/activities/calls/logic/index.js';
+import {
   countNotesData,
   getNotesData,
   notesMigration,
 } from './objects/activities/notes/logic/index.js';
+import {
+  countTasksData,
+  getTasksData,
+  tasksMigration,
+} from './objects/activities/tasks/logic/index.js';
 import {
   companyMigration,
   countCompanyData,
@@ -26,7 +36,6 @@ import {
   getLeadData,
   leadMigration,
 } from './objects/core/leads/logic/index.js';
-import { callsMigration, countCallsData, getCallsData } from './objects/activities/calls/logic/index.js';
 
 const rl = readline.createInterface({
   input,
@@ -117,6 +126,16 @@ const HUNDRED = 100;
       logger.info(`In total we have ${totalValues} notes to migrate`);
       break;
     }
+    case tasksOption: {
+      if (getExternalData) {
+        totalValues = await getTasksData();
+      } else {
+        totalValues = countTasksData();
+      }
+
+      logger.info(`In total we have ${totalValues} tasks to migrate`);
+      break;
+    }
     case callsOption: {
       if (getExternalData) {
         totalValues = await getCallsData();
@@ -200,6 +219,12 @@ const HUNDRED = 100;
         logger.info(`Start Notes migration...`);
         await notesMigration({ init, end, batch });
         logger.info(`End Notes migration...`);
+        break;
+      }
+      case tasksOption: {
+        logger.info(`Start Tasks migration...`);
+        await tasksMigration({ init, end, batch });
+        logger.info(`End Tasks migration...`);
         break;
       }
       case callsOption: {
