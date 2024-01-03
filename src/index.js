@@ -26,6 +26,7 @@ import {
   getLeadData,
   leadMigration,
 } from './objects/core/leads/logic/index.js';
+import { callsMigration, countCallsData, getCallsData } from './objects/activities/calls/logic/index.js';
 
 const rl = readline.createInterface({
   input,
@@ -116,6 +117,16 @@ const HUNDRED = 100;
       logger.info(`In total we have ${totalValues} notes to migrate`);
       break;
     }
+    case callsOption: {
+      if (getExternalData) {
+        totalValues = await getCallsData();
+      } else {
+        totalValues = countCallsData();
+      }
+
+      logger.info(`In total we have ${totalValues} calls to migrate`);
+      break;
+    }
     default: {
       logger.info(`The option ${objectInput} doesn't exist on the program`);
       break;
@@ -189,6 +200,12 @@ const HUNDRED = 100;
         logger.info(`Start Notes migration...`);
         await notesMigration({ init, end, batch });
         logger.info(`End Notes migration...`);
+        break;
+      }
+      case callsOption: {
+        logger.info(`Start Calls migration...`);
+        await callsMigration({ init, end, batch });
+        logger.info(`End Calls migration...`);
         break;
       }
       default: {
